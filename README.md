@@ -8,6 +8,12 @@ Magnifier loupe under your finger for accurate node-connection dragging on touch
 > touch-friendly HTML modals that replace clunky native LiteGraph controls,
 > detected by widget name, additive and non-clobbering.
 
+![Magnifier loupe over a connection slot](docs/loupe.png)
+
+*The magnifier loupe follows your fingertip during a connection drag, so the
+slot you're aiming at stays visible instead of hiding under your finger. The
+crosshair marks the exact pointer point.*
+
 ## Install
 
 ```sh
