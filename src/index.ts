@@ -1,8 +1,8 @@
 // Touch Connect — ComfyUI frontend extension.
 //
-// Served at /extensions/comfyui-touch-connect/js/touch-connect.js — the pack
-// directory name IS this URL segment. Do not rename the pack dir without
-// syncing EXT_NAME below.
+// Served at /extensions/comfyui-touch-connect/index.js — the pack directory
+// name IS this URL segment. Do not rename the pack dir without syncing
+// EXT_NAME below.
 //
 // What it does
 // ------------
@@ -31,7 +31,7 @@
 // the canvas or its drag state cannot be found. Mouse/trackpad input is left
 // completely untouched.
 
-import { app } from "../../../scripts/app.js";
+import { app } from "/scripts/app.js";
 
 const EXT_NAME = "comfyui-touch-connect";
 
@@ -48,6 +48,73 @@ const CONFIG = {
 };
 
 // --------------------------------------------------------------------------- //
+// Types
+// --------------------------------------------------------------------------- //
+
+// A DOMRect-like slice — only the members the geometry helpers read. Lets the
+// pure functions stay testable with plain objects (the Vitest suite passes
+// `{ left, top, width, height }` literals).
+interface RectLike {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+interface SourceRectInput {
+  clientX: number;
+  clientY: number;
+  rect: RectLike;
+  canvasW: number;
+  canvasH: number;
+  size: number;
+  zoom: number;
+}
+
+interface SourceRect {
+  sx: number;
+  sy: number;
+  sw: number;
+  sh: number;
+}
+
+interface LoupePositionInput {
+  clientX: number;
+  clientY: number;
+  viewportW: number;
+  viewportH: number;
+  size: number;
+  offset: number;
+  margin: number;
+}
+
+interface LoupePosition {
+  left: number;
+  top: number;
+  flipped: boolean;
+}
+
+// The small structural slice of LiteGraph's LGraphCanvas this pack reaches
+// into. The `@comfyorg/comfyui-frontend-types` package does not re-export the
+// LGraphCanvas type, so we model only the connection-drag fields + the backing
+// canvas element used as the magnify source. Everything else is left off so the
+// seam stays narrow.
+interface LGraphCanvasLike {
+  canvas?: HTMLCanvasElement;
+  connecting_links?: unknown[];
+  connecting_node?: unknown;
+  connecting_output?: unknown;
+  connecting_input?: unknown;
+}
+
+// The `app` import is typed via the tsconfig `paths` shim → `comfyui-shims.d.ts`
+// as `ComfyApp`. `app.canvas` is typed there, but `canvasEl` is a legacy
+// fallback not on the public type, so reach for it through a structural cast.
+interface AppCanvasFallback {
+  canvasEl?: HTMLCanvasElement;
+}
+
+// --------------------------------------------------------------------------- //
 // Pure helpers (exported for unit tests — no DOM access here)
 // --------------------------------------------------------------------------- //
 
@@ -58,10 +125,16 @@ const CONFIG = {
  * backing-store pixels (devicePixelRatio scaling), so a CSS point maps to the
  * pixel buffer by `canvasW / rect.width`. We sample a `size/zoom` CSS-px window
  * centred on the finger and return it in backing-store coordinates for drawImage.
- *
- * @returns {{sx:number, sy:number, sw:number, sh:number}}
  */
-export function computeSourceRect({ clientX, clientY, rect, canvasW, canvasH, size, zoom }) {
+export function computeSourceRect({
+  clientX,
+  clientY,
+  rect,
+  canvasW,
+  canvasH,
+  size,
+  zoom,
+}: SourceRectInput): SourceRect {
   const scaleX = rect.width ? canvasW / rect.width : 1;
   const scaleY = rect.height ? canvasH / rect.height : 1;
   const pxX = (clientX - rect.left) * scaleX;
@@ -77,8 +150,6 @@ export function computeSourceRect({ clientX, clientY, rect, canvasW, canvasH, si
  * Default: horizontally centred on the finger, sitting `offset` px ABOVE it so
  * the hand never covers the loupe. If that would clip the top edge, it flips to
  * below the finger. Both axes are clamped inside the viewport with a margin.
- *
- * @returns {{left:number, top:number, flipped:boolean}}
  */
 export function clampLoupePosition({
   clientX,
@@ -88,7 +159,7 @@ export function clampLoupePosition({
   size,
   offset,
   margin,
-}) {
+}: LoupePositionInput): LoupePosition {
   let left = clientX - size / 2;
   let top = clientY - offset - size;
   let flipped = false;
@@ -104,7 +175,7 @@ export function clampLoupePosition({
 }
 
 /** True when the LGraphCanvas is mid connection-drag (covers fork + legacy). */
-export function isConnecting(lgcanvas) {
+export function isConnecting(lgcanvas: LGraphCanvasLike | null | undefined): boolean {
   if (!lgcanvas) return false;
   return !!(
     (Array.isArray(lgcanvas.connecting_links) && lgcanvas.connecting_links.length) ||
@@ -118,13 +189,26 @@ export function isConnecting(lgcanvas) {
 // Loupe controller (DOM/canvas — only constructed in the browser via setup())
 // --------------------------------------------------------------------------- //
 
-function createLoupe() {
-  const lg = app.canvas;
-  const sourceCanvas = lg?.canvas ?? app.canvasEl;
-  if (!lg || !sourceCanvas) {
+interface LoupeState {
+  active: boolean;
+  pointerDown: boolean;
+  clientX: number;
+  clientY: number;
+  raf: number;
+}
+
+function createLoupe(): void {
+  // `app.canvas` is the LGraphCanvas; model it structurally for the fields used.
+  const lg = app.canvas as unknown as LGraphCanvasLike | undefined;
+  const maybeCanvas = lg?.canvas ?? (app as unknown as AppCanvasFallback).canvasEl;
+  if (!lg || !maybeCanvas) {
     console.warn(`[${EXT_NAME}] no LGraphCanvas found; loupe disabled`);
     return;
   }
+  // Bind the narrowed value to a const so the nested closures (render/frame)
+  // keep the non-undefined type — TS does not carry guard-narrowing of a
+  // captured outer binding into inner functions.
+  const sourceCanvas: HTMLCanvasElement = maybeCanvas;
 
   const dpr = Math.max(1, window.devicePixelRatio || 1);
   const loupe = document.createElement("canvas");
@@ -146,9 +230,15 @@ function createLoupe() {
     background: "#1a1a1a",
   });
   document.body.appendChild(loupe);
-  const lctx = loupe.getContext("2d");
+  const maybeCtx = loupe.getContext("2d");
+  if (!maybeCtx) {
+    console.warn(`[${EXT_NAME}] no 2d context; loupe disabled`);
+    return;
+  }
+  // Same closure-narrowing reason as `sourceCanvas` above.
+  const lctx: CanvasRenderingContext2D = maybeCtx;
 
-  const state = {
+  const state: LoupeState = {
     active: false,
     pointerDown: false,
     clientX: 0,
@@ -156,7 +246,7 @@ function createLoupe() {
     raf: 0,
   };
 
-  function render() {
+  function render(): void {
     const rect = sourceCanvas.getBoundingClientRect();
     const { sx, sy, sw, sh } = computeSourceRect({
       clientX: state.clientX,
@@ -197,7 +287,7 @@ function createLoupe() {
     lctx.stroke();
   }
 
-  function position() {
+  function position(): void {
     const { left, top } = clampLoupePosition({
       clientX: state.clientX,
       clientY: state.clientY,
@@ -211,7 +301,7 @@ function createLoupe() {
     loupe.style.top = `${top}px`;
   }
 
-  function frame() {
+  function frame(): void {
     if (!state.active) return;
     if (!isConnecting(lg)) {
       deactivate();
@@ -222,14 +312,14 @@ function createLoupe() {
     state.raf = requestAnimationFrame(frame);
   }
 
-  function activate() {
+  function activate(): void {
     if (state.active) return;
     state.active = true;
     loupe.style.display = "block";
     state.raf = requestAnimationFrame(frame);
   }
 
-  function deactivate() {
+  function deactivate(): void {
     if (!state.active && loupe.style.display === "none") return;
     state.active = false;
     if (state.raf) cancelAnimationFrame(state.raf);
@@ -237,7 +327,7 @@ function createLoupe() {
     loupe.style.display = "none";
   }
 
-  function watchForDrag(deadline) {
+  function watchForDrag(deadline: number): void {
     if (state.active || !state.pointerDown) return;
     if (isConnecting(lg)) {
       activate();
@@ -246,7 +336,7 @@ function createLoupe() {
     if (performance.now() < deadline) requestAnimationFrame(() => watchForDrag(deadline));
   }
 
-  function onPointerDown(e) {
+  function onPointerDown(e: PointerEvent): void {
     state.clientX = e.clientX;
     state.clientY = e.clientY;
     if (!ACTIVATE_POINTER_TYPES.has(e.pointerType)) return;
@@ -254,19 +344,19 @@ function createLoupe() {
     watchForDrag(performance.now() + CONFIG.watchMs);
   }
 
-  function onPointerMove(e) {
+  function onPointerMove(e: PointerEvent): void {
     state.clientX = e.clientX;
     state.clientY = e.clientY;
   }
 
-  function onPointerEnd() {
+  function onPointerEnd(): void {
     state.pointerDown = false;
     deactivate();
   }
 
   // Capture phase + passive: observe without ever interfering with LiteGraph's
   // own handling of the same events.
-  const opts = { capture: true, passive: true };
+  const opts: AddEventListenerOptions = { capture: true, passive: true };
   window.addEventListener("pointerdown", onPointerDown, opts);
   window.addEventListener("pointermove", onPointerMove, opts);
   window.addEventListener("pointerup", onPointerEnd, opts);
