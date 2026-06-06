@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clampLoupePosition, computeSourceRect, isConnecting } from "../../web/js/touch-connect.js";
+import { clampLoupePosition, computeSourceRect, isConnecting } from "../../src/index.ts";
 
 // These exercise the pure geometry/state helpers — the part of the loupe that
 // has no DOM dependency. The canvas/overlay wiring is covered by the manual
