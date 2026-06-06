@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.2...comfyui-touch-connect-v0.1.3) (2026-06-06)
+
+
+### Features
+
+* **build:** migrate to TypeScript + bun build ([#7](https://github.com/laurigates/comfyui-touch-connect/issues/7)) ([c55c7a2](https://github.com/laurigates/comfyui-touch-connect/commit/c55c7a2a04019aa865b9973ec5e489d1b0b33b63))
+
 ## [0.1.2](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.1...comfyui-touch-connect-v0.1.2) (2026-06-04)
 
 
