@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.3...comfyui-touch-connect-v0.1.4) (2026-06-07)
+
+
+### Bug Fixes
+
+* **ci:** set skip_checkout so the built web/dist reaches the registry ([#9](https://github.com/laurigates/comfyui-touch-connect/issues/9)) ([90296d5](https://github.com/laurigates/comfyui-touch-connect/commit/90296d52145840619bcb8b5942a2da20d6291b5e))
+
 ## [0.1.3](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.2...comfyui-touch-connect-v0.1.3) (2026-06-06)
 
 
