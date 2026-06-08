@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.4...comfyui-touch-connect-v0.1.5) (2026-06-08)
+
+
+### Bug Fixes
+
+* add Comfy Registry icon/banner and publish on release event ([#12](https://github.com/laurigates/comfyui-touch-connect/issues/12)) ([65a689c](https://github.com/laurigates/comfyui-touch-connect/commit/65a689c21ca3de547baa24a755c562dd13019b4b))
+
 ## [0.1.4](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.3...comfyui-touch-connect-v0.1.4) (2026-06-07)
 
 
