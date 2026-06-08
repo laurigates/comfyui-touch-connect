@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.5...comfyui-touch-connect-v0.1.6) (2026-06-08)
+
+
+### Bug Fixes
+
+* ship web/dist in registry tarball (pin publish-node-action skip_checkout) ([#15](https://github.com/laurigates/comfyui-touch-connect/issues/15)) ([4261362](https://github.com/laurigates/comfyui-touch-connect/commit/42613628c83186e4cd1798653ec53eb2b6b5db4e))
+
 ## [0.1.5](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.4...comfyui-touch-connect-v0.1.5) (2026-06-08)
 
 
