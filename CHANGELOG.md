@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.7](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.6...comfyui-touch-connect-v0.1.7) (2026-06-09)
+
+
+### Bug Fixes
+
+* **registry:** ship runtime-only files in the Comfy Registry tarball ([#18](https://github.com/laurigates/comfyui-touch-connect/issues/18)) ([9fe3dd9](https://github.com/laurigates/comfyui-touch-connect/commit/9fe3dd9abf78cf7c816e449cbd1ce0108bdca368))
+
 ## [0.1.6](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.5...comfyui-touch-connect-v0.1.6) (2026-06-08)
 
 
