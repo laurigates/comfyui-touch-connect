@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.8](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.7...comfyui-touch-connect-v0.1.8) (2026-06-20)
+
+
+### Features
+
+* snap touch link-start to nearest port ([#23](https://github.com/laurigates/comfyui-touch-connect/issues/23)) ([#25](https://github.com/laurigates/comfyui-touch-connect/issues/25)) ([12c5cbb](https://github.com/laurigates/comfyui-touch-connect/commit/12c5cbb395560eb2231d27d5976dc84f6c3241c0))
+
+
+### Miscellaneous
+
+* **deps:** remove Dependabot config, consolidate on Renovate ([#22](https://github.com/laurigates/comfyui-touch-connect/issues/22)) ([f8f3332](https://github.com/laurigates/comfyui-touch-connect/commit/f8f33320a32b21a887e43b9d1a602d0896f8fdc2))
+
 ## [0.1.7](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.6...comfyui-touch-connect-v0.1.7) (2026-06-09)
 
 
