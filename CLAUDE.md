@@ -40,10 +40,51 @@ grabbing/aiming at instead of having it hidden under their finger.
   overlay is `pointer-events:none` and listeners are passive, so it never
   interferes with LiteGraph's handling of the same events.
 
+### Port snapping — link START (issue #23)
+
+The loupe assists the **end** of a link drag but cannot help the **start**: a
+purely-visual overlay can't fix a source slot that LiteGraph already committed
+under the finger on `pointerdown`. So `CONFIG.snap` (touch only, on by default)
+adds the one deliberate exception to "never alter pointer events":
+
+- Our `window` capture-phase `pointerdown` listener runs **before** LiteGraph's
+  own `canvas`-element capture listener. When a touch lands *near but not on* a
+  slot, we `stopImmediatePropagation()` + `preventDefault()` the real touch and
+  re-dispatch an identical `pointerdown` at the slot centre — same `pointerId`,
+  so LiteGraph's `setPointerCapture(pointerId)` still routes the live finger's
+  move/up to the canvas. **Only `pointerdown` is corrected; move/up pass through
+  untouched**, so the link follows the real fingertip.
+- "Near but not on" = `pickSnapPort`: nearest slot whose distance to the finger
+  is `> CONFIG.snapDeadZone` (inside that, LiteGraph's native hit already wins —
+  don't interfere) and `≤ CONFIG.snapRadius` (beyond that it's a genuine miss /
+  deliberate node-drag — leave it). Slot centres come from `node.getInputPos` /
+  `getOutputPos` (graph coords) projected to client px via `ds.offset`/`ds.scale`.
+- **Fail-safe + reversible.** Missing `ds`/`graph` → no candidates → no-op. Set
+  `CONFIG.snap = false` to restore the original purely-observational behaviour.
+- ⚠️ **Needs on-device confirmation.** The synthetic-pointer re-dispatch
+  (`pointerId` reuse + `setPointerCapture` on the live touch) is the risk point;
+  `snapRadius`/`snapDeadZone` are tuning knobs to settle on real touch hardware.
+
 Pure geometry/state helpers (`computeSourceRect`, `clampLoupePosition`,
-`isConnecting`) are exported from `src/index.ts` and unit-tested in the
-`node` Vitest env; the DOM/canvas wiring is covered by the manual browser
+`isConnecting`, `pickSnapPort`) are exported from `src/index.ts` and unit-tested
+in the `node` Vitest env; the DOM/canvas wiring is covered by the manual browser
 smoke matrix.
+
+### Verified frontend API (recheck on `comfyui-frontend-package` bump)
+
+Confirmed against the bundled `api-*.js.map` sourcemap (see the path-scoped
+`comfyui-frontend-api` rule). Current package verified at the version installed
+in `.venv` as of issue #23.
+
+| Symbol | Finding |
+|---|---|
+| `LGraphCanvas` pointerdown listener | `canvas.addEventListener('pointerdown', cb, true)` — **capture phase, on the canvas element**. A `window` capture listener fires first, so `stopImmediatePropagation()` there gates the real touch before LiteGraph sees it. |
+| `CanvasPointer.down()` | Calls `element.setPointerCapture(e.pointerId)`. Re-dispatching with the **same `pointerId`** keeps move/up routed to the canvas. |
+| `connecting_links` | `@deprecated` — populated for legacy extensions but **ignored** by LiteGraph; the live drag state is owned by `LinkConnector`. Still a valid *read* signal for `isConnecting()`. |
+| Source-slot grab | On pointerdown LiteGraph hit-tests `isInRectangle(x, y, link_pos[0]-15, link_pos[1]-10, 30, 20)` per output slot, then `linkConnector.dragNewFromOutput(graph, node, output)`. A near-miss on the node body instead starts a **node drag** (`_startDraggingItems`). |
+| `node.getInputPos(slot)` / `getOutputPos(slot)` | Return the slot-centre `Point` in **graph coords**. |
+| `ds.offset` / `ds.scale` (`DragAndScale`) | Project graph→client px: `client = (graph + offset)·scale + rect.{left,top}`. |
+| `graph._nodes` | Array of nodes; `node.flags.collapsed` hides slots (skip when collecting snap candidates). |
 
 ## File layout
 
@@ -71,7 +112,12 @@ smoke matrix.
 - **Additive + non-intrusive only.** Never patch LiteGraph methods; observe via
   passive capture-phase listeners and a `pointer-events:none` overlay. The loupe
   is purely visual — it must never consume or alter the pointer events that
-  drive the actual connection.
+  drive the actual connection. **One sanctioned exception:** the `CONFIG.snap`
+  port-snap (issue #23) corrects the `pointerdown` *coordinates* by swallowing
+  and re-dispatching the touch (never patches a LiteGraph method, never touches
+  move/up). It is gated behind `CONFIG.snap` and reversible to the
+  purely-observational behaviour. Do not broaden this into method-patching or
+  altering move/up.
 - **Read the canvas, never `getImageData`.** Magnify with `drawImage` canvas→
   canvas to avoid tainting and keep it origin-agnostic.
 - **Detect drag state defensively.** `isConnecting()` checks both the modern
