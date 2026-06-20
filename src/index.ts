@@ -45,6 +45,14 @@ const CONFIG = {
   offset: 96, // gap (CSS px) between the fingertip and the near loupe edge
   margin: 8, // keep the loupe at least this far from the viewport edges
   watchMs: 350, // after a touch press, watch this long for a drag to begin
+
+  // Port snapping (issue #23 — link START on touch). On a touch pointerdown
+  // near (but not on) a node slot, swallow the real touch and re-dispatch it at
+  // the slot centre so LiteGraph grabs the intended port instead of missing it.
+  // Set `snap: false` to revert to the original purely-observational behaviour.
+  snap: true,
+  snapRadius: 30, // px from a slot centre within which a near-miss snaps to it
+  snapDeadZone: 14, // px — inside this LiteGraph's own hit-test already wins; don't interfere
 };
 
 // --------------------------------------------------------------------------- //
@@ -105,6 +113,43 @@ interface LGraphCanvasLike {
   connecting_node?: unknown;
   connecting_output?: unknown;
   connecting_input?: unknown;
+  // Used by the port-snap feature to project slot positions to screen space.
+  ds?: DragAndScaleLike;
+  graph?: GraphLike;
+}
+
+// DragAndScale: graph→screen transform. `client = (graph + offset)·scale + rect`.
+interface DragAndScaleLike {
+  offset: [number, number];
+  scale: number;
+}
+
+interface GraphLike {
+  _nodes?: NodeLike[];
+}
+
+// The slim slice of LGraphNode the snap feature reads: slot arrays (for counts)
+// and the graph-coordinate slot-centre getters.
+interface NodeLike {
+  inputs?: unknown[];
+  outputs?: unknown[];
+  flags?: { collapsed?: boolean };
+  getInputPos?(slot: number): [number, number];
+  getOutputPos?(slot: number): [number, number];
+}
+
+// A slot centre already projected into viewport (client) coordinates.
+interface PortPoint {
+  clientX: number;
+  clientY: number;
+}
+
+interface SnapPickInput {
+  fingerX: number;
+  fingerY: number;
+  ports: PortPoint[];
+  snapRadius: number;
+  deadZone: number;
 }
 
 // The `app` import is typed via the tsconfig `paths` shim → `comfyui-shims.d.ts`
@@ -174,6 +219,38 @@ export function clampLoupePosition({
   return { left, top, flipped };
 }
 
+/**
+ * Pick the slot a near-miss touch should snap to, or null to leave the touch
+ * alone. Returns the index of the closest port whose distance to the finger is
+ * inside `snapRadius` but outside `deadZone`:
+ *   - dist ≤ deadZone  → null: LiteGraph's own hit-test already grabs it; don't interfere.
+ *   - dist > snapRadius → null: a genuine miss (empty canvas / deliberate node-drag).
+ *   - in between        → snap to the nearest port.
+ * Pure: callers project slot centres to client px and pass them in `ports`.
+ */
+export function pickSnapPort({
+  fingerX,
+  fingerY,
+  ports,
+  snapRadius,
+  deadZone,
+}: SnapPickInput): number | null {
+  let best = -1;
+  let bestDist = Infinity;
+  for (let i = 0; i < ports.length; i++) {
+    const port = ports[i];
+    if (!port) continue;
+    const dist = Math.hypot(port.clientX - fingerX, port.clientY - fingerY);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = i;
+    }
+  }
+  if (best < 0) return null;
+  if (bestDist <= deadZone || bestDist > snapRadius) return null;
+  return best;
+}
+
 /** True when the LGraphCanvas is mid connection-drag (covers fork + legacy). */
 export function isConnecting(lgcanvas: LGraphCanvasLike | null | undefined): boolean {
   if (!lgcanvas) return false;
@@ -205,10 +282,11 @@ function createLoupe(): void {
     console.warn(`[${EXT_NAME}] no LGraphCanvas found; loupe disabled`);
     return;
   }
-  // Bind the narrowed value to a const so the nested closures (render/frame)
-  // keep the non-undefined type — TS does not carry guard-narrowing of a
+  // Bind the narrowed values to consts so the nested closures (render/frame/
+  // snap) keep the non-undefined type — TS does not carry guard-narrowing of a
   // captured outer binding into inner functions.
   const sourceCanvas: HTMLCanvasElement = maybeCanvas;
+  const lgCanvas: LGraphCanvasLike = lg;
 
   const dpr = Math.max(1, window.devicePixelRatio || 1);
   const loupe = document.createElement("canvas");
@@ -352,6 +430,113 @@ function createLoupe(): void {
   function onPointerEnd(): void {
     state.pointerDown = false;
     deactivate();
+  }
+
+  // ------------------------------------------------------------------------- //
+  // Port snapping (issue #23): link START on touch.
+  //
+  // A purely-visual loupe cannot fix the *start* of a link: LiteGraph commits
+  // the source slot synchronously on pointerdown (hit-testing e.canvasX/Y),
+  // before any drag/loupe feedback exists — so a near-miss is locked in. The
+  // smallest effective intervention is to correct the pointerdown coordinates:
+  // LiteGraph listens in the CAPTURE phase on the canvas element, and this
+  // listener is on `window` (also capture), so it runs first. When a touch
+  // lands near — but not on — a slot, we swallow it and re-dispatch an identical
+  // pointerdown at the slot centre, with the SAME pointerId so LiteGraph's
+  // `setPointerCapture(pointerId)` still routes the live finger's move/up to the
+  // canvas. Only pointerdown is corrected; move/up pass through untouched, so
+  // the link follows the real fingertip. This is the one place the pack departs
+  // from "never alter pointer events" — gated behind CONFIG.snap.
+  // ------------------------------------------------------------------------- //
+
+  /** Project every (non-collapsed) node's input + output slot centres to client px. */
+  function collectPorts(rect: DOMRect): PortPoint[] {
+    const ds = lgCanvas.ds;
+    const nodes = lgCanvas.graph?._nodes;
+    if (!ds || !Array.isArray(nodes)) return [];
+    const out: PortPoint[] = [];
+    for (const node of nodes) {
+      if (node.flags?.collapsed) continue; // slots are hidden behind the collapse dot
+      const toClient = (gp: [number, number]): PortPoint => ({
+        clientX: (gp[0] + ds.offset[0]) * ds.scale + rect.left,
+        clientY: (gp[1] + ds.offset[1]) * ds.scale + rect.top,
+      });
+      const inputs = node.inputs ?? [];
+      for (let i = 0; i < inputs.length; i++) {
+        try {
+          const p = node.getInputPos?.(i);
+          if (p) out.push(toClient(p));
+        } catch {
+          // Defensive: a fork may throw on an odd slot; just skip it.
+        }
+      }
+      const outputs = node.outputs ?? [];
+      for (let i = 0; i < outputs.length; i++) {
+        try {
+          const p = node.getOutputPos?.(i);
+          if (p) out.push(toClient(p));
+        } catch {
+          // As above.
+        }
+      }
+    }
+    return out;
+  }
+
+  // Re-entrancy guard: our synthetic pointerdown re-enters this same window
+  // capture listener; skip it so we don't recurse or double-snap.
+  let dispatchingSynthetic = false;
+
+  function onPointerDownSnap(e: PointerEvent): void {
+    if (dispatchingSynthetic) return;
+    if (!CONFIG.snap) return;
+    if (!ACTIVATE_POINTER_TYPES.has(e.pointerType)) return;
+    if (e.target !== sourceCanvas) return; // only correct touches on the graph canvas itself
+
+    const rect = sourceCanvas.getBoundingClientRect();
+    const ports = collectPorts(rect);
+    const idx = pickSnapPort({
+      fingerX: e.clientX,
+      fingerY: e.clientY,
+      ports,
+      snapRadius: CONFIG.snapRadius,
+      deadZone: CONFIG.snapDeadZone,
+    });
+    if (idx == null) return; // genuine miss or already on-target → leave the touch alone
+
+    const target = ports[idx];
+    if (!target) return;
+    // Swallow the real touch (stops the canvas's capture listener too)…
+    e.stopImmediatePropagation();
+    e.preventDefault();
+    // …and replay it at the slot centre so LiteGraph grabs the intended port.
+    dispatchingSynthetic = true;
+    try {
+      sourceCanvas.dispatchEvent(
+        new PointerEvent("pointerdown", {
+          pointerId: e.pointerId,
+          pointerType: e.pointerType,
+          isPrimary: e.isPrimary,
+          clientX: target.clientX,
+          clientY: target.clientY,
+          button: 0,
+          buttons: 1,
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+        }),
+      );
+    } finally {
+      dispatchingSynthetic = false;
+    }
+  }
+
+  // Snap runs first (non-passive so it can preventDefault); the observation
+  // listeners below stay passive. When snap fires it calls
+  // stopImmediatePropagation on the real touch, then the synthetic re-dispatch
+  // feeds the observation listeners so the loupe still activates.
+  if (CONFIG.snap) {
+    window.addEventListener("pointerdown", onPointerDownSnap, { capture: true, passive: false });
   }
 
   // Capture phase + passive: observe without ever interfering with LiteGraph's

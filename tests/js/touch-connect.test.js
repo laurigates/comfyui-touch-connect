@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { clampLoupePosition, computeSourceRect, isConnecting } from "../../src/index.ts";
+import {
+  clampLoupePosition,
+  computeSourceRect,
+  isConnecting,
+  pickSnapPort,
+} from "../../src/index.ts";
 
 // These exercise the pure geometry/state helpers — the part of the loupe that
 // has no DOM dependency. The canvas/overlay wiring is covered by the manual
@@ -94,5 +99,40 @@ describe("isConnecting", () => {
     expect(isConnecting({ connecting_node: {} })).toBe(true);
     expect(isConnecting({ connecting_output: {} })).toBe(true);
     expect(isConnecting({ connecting_input: {} })).toBe(true);
+  });
+});
+
+describe("pickSnapPort", () => {
+  const base = { fingerX: 100, fingerY: 100, snapRadius: 30, deadZone: 14 };
+
+  it("returns null when there are no ports", () => {
+    expect(pickSnapPort({ ...base, ports: [] })).toBeNull();
+  });
+
+  it("returns null when the nearest port is beyond the snap radius (a genuine miss)", () => {
+    // 50px away, radius 30 → no snap, let LiteGraph pan / node-drag as normal.
+    const ports = [{ clientX: 150, clientY: 100 }];
+    expect(pickSnapPort({ ...base, ports })).toBeNull();
+  });
+
+  it("returns null inside the dead zone (LiteGraph's native hit already succeeds)", () => {
+    // 10px away, dead zone 14 → don't interfere; the real touch hits natively.
+    const ports = [{ clientX: 110, clientY: 100 }];
+    expect(pickSnapPort({ ...base, ports })).toBeNull();
+  });
+
+  it("snaps to a near-miss between the dead zone and the snap radius", () => {
+    // 20px away (14 < 20 ≤ 30) → snap to it.
+    const ports = [{ clientX: 120, clientY: 100 }];
+    expect(pickSnapPort({ ...base, ports })).toBe(0);
+  });
+
+  it("picks the closest snappable port when several are in range", () => {
+    const ports = [
+      { clientX: 125, clientY: 100 }, // 25px
+      { clientX: 118, clientY: 100 }, // 18px — closest
+      { clientX: 100, clientY: 128 }, // 28px
+    ];
+    expect(pickSnapPort({ ...base, ports })).toBe(1);
   });
 });
