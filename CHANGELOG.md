@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.9](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.8...comfyui-touch-connect-v0.1.9) (2026-06-26)
+
+
+### Bug Fixes
+
+* **dist:** commit web/dist so git-based updates carry the built frontend ([#31](https://github.com/laurigates/comfyui-touch-connect/issues/31)) ([c988497](https://github.com/laurigates/comfyui-touch-connect/commit/c988497ec512ebac3c26bff06f0a965fded7f5a2))
+
 ## [0.1.8](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.7...comfyui-touch-connect-v0.1.8) (2026-06-20)
 
 
