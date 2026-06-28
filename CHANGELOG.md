@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.10](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.9...comfyui-touch-connect-v0.1.10) (2026-06-28)
+
+
+### Miscellaneous
+
+* sync uv.lock and auto-bump it via release-please ([#34](https://github.com/laurigates/comfyui-touch-connect/issues/34)) ([ba1d72d](https://github.com/laurigates/comfyui-touch-connect/commit/ba1d72dd5a0d159899c054ccebac3678f127d98a))
+
 ## [0.1.9](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.8...comfyui-touch-connect-v0.1.9) (2026-06-26)
 
 
