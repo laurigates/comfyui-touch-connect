@@ -31,6 +31,7 @@
 // the canvas or its drag state cannot be found. Mouse/trackpad input is left
 // completely untouched.
 
+import { claimPointer, isModalActive } from "@laurigates/comfy-modal-kit";
 import { app } from "/scripts/app.js";
 
 const EXT_NAME = "comfyui-touch-connect";
@@ -418,6 +419,10 @@ function createLoupe(): void {
     state.clientX = e.clientX;
     state.clientY = e.clientY;
     if (!ACTIVATE_POINTER_TYPES.has(e.pointerType)) return;
+    // Stand down while any pack's modal is open (isModalActive() reflects modals
+    // opened by any inlined kit copy via the shared Symbol.for global) — don't
+    // start watching for a connection drag behind an open modal.
+    if (isModalActive()) return;
     state.pointerDown = true;
     watchForDrag(performance.now() + CONFIG.watchMs);
   }
@@ -492,6 +497,11 @@ function createLoupe(): void {
     if (!CONFIG.snap) return;
     if (!ACTIVATE_POINTER_TYPES.has(e.pointerType)) return;
     if (e.target !== sourceCanvas) return; // only correct touches on the graph canvas itself
+    // Kit pointer-claim protocol (defense-in-depth): stand down while any pack's
+    // modal is open. The kit's own backdrop already swallows taps landing over an
+    // open modal, and the target-canvas guard above excludes non-canvas targets,
+    // so this is an explicit, robust veto rather than a fix for a live bug.
+    if (isModalActive()) return;
 
     const rect = sourceCanvas.getBoundingClientRect();
     const ports = collectPorts(rect);
@@ -506,6 +516,9 @@ function createLoupe(): void {
 
     const target = ports[idx];
     if (!target) return;
+    // The gesture is committing a real snap — announce the claim so peer packs
+    // can observe who owns this pointer (kit pointer-claim protocol; advisory).
+    claimPointer("touch-connect");
     // Swallow the real touch (stops the canvas's capture listener too)…
     e.stopImmediatePropagation();
     e.preventDefault();

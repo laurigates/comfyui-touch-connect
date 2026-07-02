@@ -1,3 +1,21 @@
+// node_modules/@laurigates/comfy-modal-kit/dist/index.js
+var KEY = Symbol.for("laurigates.comfyModalKit");
+function getKit() {
+  const g = globalThis;
+  let kit = g[KEY];
+  if (!kit) {
+    kit = { fieldProviders: [], activeModal: null, pointerClaim: null };
+    g[KEY] = kit;
+  }
+  return kit;
+}
+function isModalActive() {
+  return getKit().activeModal !== null;
+}
+function claimPointer(id) {
+  getKit().pointerClaim = id;
+}
+
 // src/index.ts
 import { app } from "/scripts/app.js";
 var EXT_NAME = "comfyui-touch-connect";
@@ -213,6 +231,8 @@ function createLoupe() {
     state.clientY = e.clientY;
     if (!ACTIVATE_POINTER_TYPES.has(e.pointerType))
       return;
+    if (isModalActive())
+      return;
     state.pointerDown = true;
     watchForDrag(performance.now() + CONFIG.watchMs);
   }
@@ -266,6 +286,8 @@ function createLoupe() {
       return;
     if (e.target !== sourceCanvas)
       return;
+    if (isModalActive())
+      return;
     const rect = sourceCanvas.getBoundingClientRect();
     const ports = collectPorts(rect);
     const idx = pickSnapPort({
@@ -280,6 +302,7 @@ function createLoupe() {
     const target = ports[idx];
     if (!target)
       return;
+    claimPointer("touch-connect");
     e.stopImmediatePropagation();
     e.preventDefault();
     dispatchingSynthetic = true;
