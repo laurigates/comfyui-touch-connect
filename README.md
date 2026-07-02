@@ -2,9 +2,15 @@
 
 Magnifier loupe under your finger for accurate node-connection dragging on touch devices.
 
-> Part of a family of mobile-first ComfyUI usability packs
+> Part of a family of mobile-first ComfyUI usability packs built on
+> [comfy-modal-kit](https://github.com/laurigates/comfy-modal-kit)
 > ([gallery-loader](https://github.com/laurigates/comfyui-gallery-loader),
-> [sampler-info](https://github.com/laurigates/comfyui-sampler-info)):
+> [model-gallery](https://github.com/laurigates/comfyui-model-gallery),
+> [prompt-editor](https://github.com/laurigates/comfyui-prompt-editor),
+> [sampler-info](https://github.com/laurigates/comfyui-sampler-info),
+> [touch-numeric](https://github.com/laurigates/comfyui-touch-numeric),
+> [touch-resize](https://github.com/laurigates/comfyui-touch-resize),
+> [touch-tooltips](https://github.com/laurigates/comfyui-touch-tooltips)):
 > touch-friendly HTML modals that replace clunky native LiteGraph controls,
 > detected by widget name, additive and non-clobbering.
 
