@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.11](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.10...comfyui-touch-connect-v0.1.11) (2026-07-02)
+
+
+### Features
+
+* adopt kit pointer-claim protocol (isModalActive veto + claimPointer) ([#38](https://github.com/laurigates/comfyui-touch-connect/issues/38)) ([14fe1f9](https://github.com/laurigates/comfyui-touch-connect/commit/14fe1f97b5b5ed976754949fe46d042f957e50b1))
+
 ## [0.1.10](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.9...comfyui-touch-connect-v0.1.10) (2026-06-28)
 
 
