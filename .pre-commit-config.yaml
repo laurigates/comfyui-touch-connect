@@ -7,7 +7,7 @@ repos:
       - id: ruff-format
 
   - repo: https://github.com/biomejs/pre-commit
-    rev: v0.6.1
+    rev: v2.5.2
     hooks:
       - id: biome-check
         # Must match biome.json's schema (2.x) and what `just lint` / CI run
