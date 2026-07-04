@@ -559,8 +559,6 @@ function createLoupe(): void {
   window.addEventListener("pointermove", onPointerMove, opts);
   window.addEventListener("pointerup", onPointerEnd, opts);
   window.addEventListener("pointercancel", onPointerEnd, opts);
-
-  console.log(`[${EXT_NAME}] loupe ready`);
 }
 
 app.registerExtension({
