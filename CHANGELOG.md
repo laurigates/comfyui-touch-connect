@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.12](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.11...comfyui-touch-connect-v0.1.12) (2026-07-04)
+
+
+### Bug Fixes
+
+* **instrumentation:** finish README + drop unconditional trace log ([#41](https://github.com/laurigates/comfyui-touch-connect/issues/41)) ([64d7b70](https://github.com/laurigates/comfyui-touch-connect/commit/64d7b70afb8d235284bb4583a2e93eb51a5659cb))
+
 ## [0.1.11](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.10...comfyui-touch-connect-v0.1.11) (2026-07-02)
 
 
