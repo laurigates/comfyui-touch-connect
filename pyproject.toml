@@ -14,7 +14,9 @@ classifiers = [
     "Topic :: Multimedia :: Graphics",
 ]
 
-# Floor tied to widget.onPointerDown availability. Frontend-only pack — no runtime Python deps.
+# Floor tied to the LGraphCanvas connection-drag APIs this pack reads:
+# the `connecting_links` drag-state signal and DragAndScale (`ds.offset`/`ds.scale`)
+# graph→client projection. Frontend-only pack — no runtime Python deps.
 dependencies = [
     "comfyui-frontend-package>=1.40.0",
 ]
