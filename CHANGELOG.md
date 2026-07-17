@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.13](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.12...comfyui-touch-connect-v0.1.13) (2026-07-17)
+
+
+### Bug Fixes
+
+* **registry:** shrink registry tarball scan surface + hygiene guard ([#44](https://github.com/laurigates/comfyui-touch-connect/issues/44)) ([9713166](https://github.com/laurigates/comfyui-touch-connect/commit/97131660fad7e2dc22b34f28476f3f429135c3a9))
+
 ## [0.1.12](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.11...comfyui-touch-connect-v0.1.12) (2026-07-04)
 
 
