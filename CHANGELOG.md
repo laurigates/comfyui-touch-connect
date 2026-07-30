@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.14](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.13...comfyui-touch-connect-v0.1.14) (2026-07-30)
+
+
+### Features
+
+* **assets:** restyle the banner to the vector family ([#49](https://github.com/laurigates/comfyui-touch-connect/issues/49)) ([a71ad73](https://github.com/laurigates/comfyui-touch-connect/commit/a71ad736370ff788cf7273fff352c16266e3ce52))
+
 ## [0.1.13](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.12...comfyui-touch-connect-v0.1.13) (2026-07-17)
 
 
