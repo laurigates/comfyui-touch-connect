@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.15](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.14...comfyui-touch-connect-v0.1.15) (2026-08-16)
+
+
+### Miscellaneous
+
+* **ci:** guard registry-health against closing on Pending; drop duplicate Renovate runner ([#52](https://github.com/laurigates/comfyui-touch-connect/issues/52)) ([f0670d6](https://github.com/laurigates/comfyui-touch-connect/commit/f0670d608879375e808b480d01c4f4054e6664ea))
+
 ## [0.1.14](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.13...comfyui-touch-connect-v0.1.14) (2026-07-30)
 
 
