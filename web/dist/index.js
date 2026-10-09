@@ -345,8 +345,8 @@ app.registerExtension({
   }
 });
 export {
-  pickSnapPort,
-  isConnecting,
+  clampLoupePosition,
   computeSourceRect,
-  clampLoupePosition
+  isConnecting,
+  pickSnapPort
 };
