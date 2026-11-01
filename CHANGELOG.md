@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.16](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.15...comfyui-touch-connect-v0.1.16) (2026-10-23)
+
+
+### Bug Fixes
+
+* **deps:** bump @laurigates/comfy-modal-kit to ^0.14.0 and rebuild web/dist ([#57](https://github.com/laurigates/comfyui-touch-connect/issues/57)) ([87acb05](https://github.com/laurigates/comfyui-touch-connect/commit/87acb0518a16aaac9e3f52fb854b2b8bc34064a6)), closes [#54](https://github.com/laurigates/comfyui-touch-connect/issues/54)
+
 ## [0.1.15](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.14...comfyui-touch-connect-v0.1.15) (2026-08-16)
 
 
