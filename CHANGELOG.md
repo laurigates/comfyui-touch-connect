@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.17](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.16...comfyui-touch-connect-v0.1.17) (2026-11-16)
+
+
+### Bug Fixes
+
+* **types:** move @comfyorg/comfyui-frontend-types to ^1.60.0 ([#69](https://github.com/laurigates/comfyui-touch-connect/issues/69)) ([8216100](https://github.com/laurigates/comfyui-touch-connect/commit/821610052b51cbe70a75c985aa0204fab1eb2f5e))
+
 ## [0.1.16](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.15...comfyui-touch-connect-v0.1.16) (2026-10-23)
 
 
