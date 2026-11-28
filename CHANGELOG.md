@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.18](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.17...comfyui-touch-connect-v0.1.18) (2026-11-26)
+
+
+### Bug Fixes
+
+* **deps:** update dependency playwright to v1.55.1 [security] ([#62](https://github.com/laurigates/comfyui-touch-connect/issues/62)) ([80e3150](https://github.com/laurigates/comfyui-touch-connect/commit/80e3150a7becb485cea7db7c9863214187588424))
+
+
+### Miscellaneous
+
+* **claude:** reconcile Claude Code config with the repo baseline ([#66](https://github.com/laurigates/comfyui-touch-connect/issues/66)) ([98b65d1](https://github.com/laurigates/comfyui-touch-connect/commit/98b65d121e0cdf01babaa34ba49d95c5c9a78f50))
+* **deps:** update dependency virtualenv to v21.14.10 [security] ([#71](https://github.com/laurigates/comfyui-touch-connect/issues/71)) ([40e8a3f](https://github.com/laurigates/comfyui-touch-connect/commit/40e8a3f04ce9af6ed70f68265fd2eba35a2266cb))
+
 ## [0.1.17](https://github.com/laurigates/comfyui-touch-connect/compare/comfyui-touch-connect-v0.1.16...comfyui-touch-connect-v0.1.17) (2026-11-16)
 
 
